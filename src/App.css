@@ -1,0 +1,125 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.window-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 32px;
+  background-color: transparent;
+  -webkit-app-region: drag;
+  padding-right: 8px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.window-controls button {
+  -webkit-app-region: no-drag;
+  background: none;
+  border: none;
+  color: #000;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.window-controls button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.window-controls button:last-child:hover {
+  background-color: #ff4d4f;
+}
+
+/* 全局滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Firefox 滚动条样式 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+/* 暗色主题滚动条 */
+.dark ::-webkit-scrollbar-track {
+  background: #1f1f1f;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #666;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+.dark * {
+  scrollbar-color: #666 #1f1f1f;
+}
+
+/* 确保滚动条在内容上可见 */
+.ant-layout {
+  overflow: overlay;
+}
+
+.ant-layout-sider {
+  overflow: overlay !important;
+}
+
+.ant-menu {
+  overflow: overlay !important;
+}
+
+.ant-table-body {
+  overflow: overlay !important;
+}
+
+.ant-modal-body {
+  overflow: overlay !important;
+}
+
+.ant-drawer-body {
+  overflow: overlay !important;
+}
+
+/* 自定义滚动条动画 */
+::-webkit-scrollbar-thumb {
+  transition: background 0.3s ease;
+}
+
+/* 隐藏滚动条但保留功能 */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+} 

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https:; font-src 'self' data:;">
+    <title>桥梁抗震性能评估</title>
+    <link rel="stylesheet" href="https://unpkg.com/antd@5.0.0/dist/reset.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+        }
+        #root {
+            height: 100vh;
+        }
+        .ant-pro-layout {
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+      window.electron = {
+        ipcRenderer: {
+          send: (channel, data) => {
+            window.electronAPI.send(channel, data);
+          }
+        }
+      };
+    </script>
+</body>
+</html> 
