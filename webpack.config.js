@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
@@ -12,11 +13,17 @@ module.exports = {
   },
   devtool: 'source-map',
   devServer: {
-    hot: true,
+    hot: 'only',
     port: 3000,
-    static: {
-      directory: path.join(__dirname, 'dist'),
-    },
+    static: [
+      {
+        directory: path.join(__dirname, 'dist'),
+      },
+      {
+        directory: path.join(__dirname, 'public'),
+        publicPath: '/'
+      }
+    ],
     historyApiFallback: true,
     client: {
       overlay: true,
@@ -30,7 +37,10 @@ module.exports = {
       filename: 'index.html',
       inject: 'body'
     }),
-    new ReactRefreshWebpackPlugin()
+    new webpack.HotModuleReplacementPlugin(),
+    new ReactRefreshWebpackPlugin({
+      overlay: false
+    })
   ],
   module: {
     rules: [
@@ -41,7 +51,9 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: ['@babel/preset-react'],
-            plugins: [require.resolve('react-refresh/babel')]
+            plugins: [
+              process.env.NODE_ENV !== 'production' && require.resolve('react-refresh/babel')
+            ].filter(Boolean)
           }
         }
       },
