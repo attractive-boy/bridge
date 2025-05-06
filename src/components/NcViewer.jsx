@@ -9,6 +9,7 @@ function NcViewer({ ncPath }) {
   const rendererRef = useRef(null);
   const controlsRef = useRef(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // 初始化场景
@@ -45,77 +46,64 @@ function NcViewer({ ncPath }) {
     directionalLight.position.set(1, 1, 1);
     scene.add(directionalLight);
 
+    // 添加坐标轴辅助
+    const axesHelper = new THREE.AxesHelper(50);
+    scene.add(axesHelper);
+
     // 加载并解析 NC 文件
-    fetch(ncPath)
+    fetch(`http://localhost:5000/api/nc/${encodeURIComponent(ncPath)}`)
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return response.text();
+        return response.json();
       })
-      .then(ncText => {
+      .then(data => {
         try {
-          console.log('NC文件内容:', ncText);
-          
-          // 解析NC文件内容
-          const ncLines = ncText.split('\n');
-          console.log('NC文件行数:', ncLines.length);
-          
+          if (data.error) {
+            throw new Error(data.error);
+          }
+
           const vertices = [];
-          const indices = [];
-          let currentPosition = new THREE.Vector3(0, 0, 0);
-
-          ncLines.forEach((line, index) => {
-            // 移除注释和空白字符
-            line = line.split(';')[0].trim();
-            if (!line) return;
-
-            console.log(`处理第${index + 1}行:`, line);
-            
-            // 这里需要根据实际的NC文件格式进行解析
-            // 这是一个简单的示例，假设NC文件包含G01命令
-            if (line.includes('G01')) {
-              const parts = line.split(' ');
-              let x = currentPosition.x;
-              let y = currentPosition.y;
-              let z = currentPosition.z;
-
-              parts.forEach(part => {
-                if (part.startsWith('X')) x = parseFloat(part.substring(1));
-                if (part.startsWith('Y')) y = parseFloat(part.substring(1));
-                if (part.startsWith('Z')) z = parseFloat(part.substring(1));
-              });
-
-              console.log(`解析坐标: X=${x}, Y=${y}, Z=${z}`);
-
-              vertices.push(currentPosition.x, currentPosition.y, currentPosition.z);
-              vertices.push(x, y, z);
-
-              const startIndex = vertices.length / 3 - 2;
-              indices.push(startIndex, startIndex + 1);
-
-              currentPosition.set(x, y, z);
+          const colors = [];
+          
+          // 处理所有变量
+          Object.entries(data.variables).forEach(([name, variable]) => {
+            const values = variable.data;
+            for (let i = 0; i < values.length; i += 3) {
+              if (i + 2 < values.length) {
+                vertices.push(values[i], values[i + 1], values[i + 2]);
+                
+                // 根据高度设置颜色
+                const height = values[i + 2];
+                const color = new THREE.Color();
+                color.setHSL((height + 1) / 2, 1, 0.5);
+                colors.push(color.r, color.g, color.b);
+              }
             }
           });
 
-          console.log('解析后的顶点数:', vertices.length / 3);
-          console.log('解析后的索引数:', indices.length);
-
           if (vertices.length === 0) {
-            setError('NC文件中没有找到可显示的路径');
+            setError('NC文件中没有找到可显示的数据');
             return;
           }
 
+          // 创建点云
           const geometry = new THREE.BufferGeometry();
           geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-          geometry.setIndex(indices);
+          geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-          const material = new THREE.LineBasicMaterial({ color: 0x000000 });
-          const ncLinesMesh = new THREE.LineSegments(geometry, material);
-          scene.add(ncLinesMesh);
+          const material = new THREE.PointsMaterial({
+            size: 0.5,
+            vertexColors: true,
+            sizeAttenuation: true
+          });
+
+          const points = new THREE.Points(geometry, material);
+          scene.add(points);
 
           // 自动调整相机位置
-          const box = new THREE.Box3().setFromObject(ncLinesMesh);
+          const box = new THREE.Box3().setFromObject(points);
           const center = box.getCenter(new THREE.Vector3());
           const size = box.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z);
@@ -124,6 +112,8 @@ function NcViewer({ ncPath }) {
           camera.position.z = cameraZ * 1.5;
           camera.lookAt(center);
           controls.target.copy(center);
+
+          setLoading(false);
         } catch (parseError) {
           console.error('NC parsing error:', parseError);
           setError(`NC解析错误: ${parseError.message}`);
@@ -192,6 +182,20 @@ function NcViewer({ ncPath }) {
         height: '100%'
       }}>
         {error}
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div style={{ 
+        padding: 24, 
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%'
+      }}>
+        加载中...
       </div>
     );
   }

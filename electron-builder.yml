@@ -1,0 +1,21 @@
+appId: com.your.app
+productName: Your App Name
+directories:
+  output: dist
+files:
+  - build/**/*
+  - node_modules/**/*
+  - package.json
+  - src/main.js
+extraResources:
+  - from: backend
+    to: backend
+  - from: python
+    to: python
+win:
+  target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true 
