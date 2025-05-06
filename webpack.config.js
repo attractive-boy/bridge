@@ -13,23 +13,22 @@ module.exports = {
   },
   devtool: 'source-map',
   devServer: {
-    hot: 'only',
+    hot: true,
     port: 3000,
-    static: [
-      {
-        directory: path.join(__dirname, 'dist'),
-      },
-      {
-        directory: path.join(__dirname, 'public'),
-        publicPath: '/'
-      }
-    ],
+    open: true,
+    static: {
+      directory: path.join(__dirname, 'public'),
+      publicPath: '/'
+    },
     historyApiFallback: true,
     client: {
       overlay: true,
       progress: true,
     },
     watchFiles: ['src/**/*'],
+    headers: {
+      'Access-Control-Allow-Origin': '*'
+    }
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -40,6 +39,9 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin(),
     new ReactRefreshWebpackPlugin({
       overlay: false
+    }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     })
   ],
   module: {
